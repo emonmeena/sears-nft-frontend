@@ -3,12 +3,19 @@ import Web3 from "web3";
 import Home from "./pages/Home";
 import "./App.css";
 import Navbar from "./components/navbar/Navbar";
+import { Button } from "react-bootstrap";
 
 export default function App(props) {
   const [account, setAccount] = useState("");
   const [contract, setContract] = useState([]);
   const [loading, setLoading] = useState(true);
   const [eventsData, setEventsData] = useState(null);
+
+  const [param1, setParam1] = useState();
+  const [param2, setParam2] = useState();
+  const [param3, setParam3] = useState();
+  const [param4, setParam4] = useState();
+  const [param5, setParam5] = useState();
 
   useEffect(() => {
     loadingDeafult();
@@ -894,7 +901,8 @@ export default function App(props) {
           type: "function",
         },
       ],
-      "0x1B1c49f8166c49B7F61be33B55863840be88aeC6",
+      // 0xC37d1D95A017EBfb54b590BA0BF22dE26060a99A  
+      "0x98Ef5F009FCC2448b6D4b461b2078B957693358E",
       { from: account, gas: 150000, gasPrice: "30000000000" }
     );
     setContract(myContract);
@@ -907,28 +915,191 @@ export default function App(props) {
   };
 
   const createNewEvent = async (event_name, total_supply, base_price) => {
+    console.log("LOADING");
     await contract.methods
       .createEvent(event_name, total_supply, base_price)
-      .send({ from: account })
-      .once("receipt", (receipt) => {
-        console.log(receipt);
-      });
+      .send({ from: account }, (err, res) => {
+        if (err) {
+          console.log("An error occured", err);
+          return;
+        }
+        console.log("Hash of the transaction: " + res);
+      })
+    .once("receipt", (receipt) => {
+      console.log(receipt);
+    });
   };
 
   const openEventSale = async (event_id) => {
+    console.log("LOADING");
+
     await contract.methods
       .openEventSale(event_id)
       .send({ from: account })
       .once("receipt", (receipt) => {
         console.log(receipt);
       });
-    console.log("after");
     getAvailableEvents();
   };
 
   const getAvailableEvents = async () => {
+    console.log("getting events");
+
     await contract.methods
       .getAvailableEvents()
+      .call()
+      .then((events) => {
+        setEventsData(events);
+        console.log(events);
+      })
+      .catch((err) => console.log(err));
+  };
+
+  const closeEventSale = async (event_id) => {
+    console.log("LOADING");
+
+    await contract.methods
+      .closeEventSale(event_id)
+      .send({ from: account })
+      .once("receipt", (receipt) => {
+        console.log(receipt);
+      });
+    getAvailableEvents();
+  };
+
+  const URImintForEventId = async (target_uri, event_id) => {
+    console.log("LOADING", target_uri, event_id);
+
+    await contract.methods
+      .URImintForEventId(target_uri, event_id)
+      .send({ from: account })
+      .once("receipt", (receipt) => {
+        console.log(receipt);
+      });
+  };
+
+  const BulkURImintForEventId = async (
+    target_uri,
+    event_id,
+    number_of_tickets
+  ) => {
+    console.log("LOADING");
+
+    await contract.methods
+      .BulkURImintForEventId(target_uri, event_id, number_of_tickets)
+      .send({ from: account })
+      .once("receipt", (receipt) => {
+        console.log(receipt);
+      });
+  };
+
+  const AuthorizeSellTicketfromEventOwner = async (
+    ticket_id,
+    payment_amount,
+    event_id
+  ) => {
+    console.log("LOADING");
+
+    await contract.methods
+      .authorizeSellTicketfromEventOwner(
+        ticket_id,
+        payment_amount,
+        event_id,
+        account
+      )
+      .send({ from: account })
+      .once("receipt", (receipt) => {
+        console.log(receipt);
+      });
+  };
+
+  const authorizeSellTicketfromSecondHandOwner = async (
+    ticket_id,
+    payment_amount,
+    event_id
+  ) => {
+    console.log("LOADING");
+
+    await contract.methods
+      .authorizeSellTicketfromSecondHandOwner(
+        ticket_id,
+        payment_amount,
+        event_id,
+        account
+      )
+      .send({ from: account })
+      .once("receipt", (receipt) => {
+        console.log(receipt);
+      });
+  };
+
+  const bid = async (bid_amount, bid_token, event_id) => {
+    console.log("LOADING");
+
+    await contract.methods
+      .bid(bid_amount, bid_token, event_id)
+      .send({ from: account })
+      .once("receipt", (receipt) => {
+        console.log(receipt);
+      });
+  };
+
+  const releaseTokentoHighestBidder = async (ticket_id) => {
+    console.log("LOADING");
+
+    await contract.methods
+      .releaseTokentoHighestBidder(ticket_id)
+      .send({ from: account })
+      .once("receipt", (receipt) => {
+        console.log(receipt);
+      });
+  };
+
+  const sellToken = async (
+    token_id,
+    type_of_bid,
+    duration,
+    price,
+    event_id
+  ) => {
+    console.log("LOADING");
+
+    await contract.methods
+      .sellToken(token_id, type_of_bid, duration, price, event_id)
+      .send({ from: account })
+      .once("receipt", (receipt) => {
+        console.log(receipt);
+      });
+  };
+
+  const getAvailableEventTickets = async (event_id) => {
+    console.log("LOADING");
+    await contract.methods
+      .getAvailableEventTickets(event_id)
+      .call()
+      .then((events) => {
+        setEventsData(events);
+        console.log(events);
+      })
+      .catch((err) => console.log(err));
+  };
+
+  const getAvailableResaleAuctions = async () => {
+    console.log("LOADING");
+    await contract.methods
+      .getAvailableResaleAuctions()
+      .call()
+      .then((events) => {
+        setEventsData(events);
+        console.log(events);
+      })
+      .catch((err) => console.log(err));
+  };
+
+  const getAvailableResaleDirectSaleTickets = async () => {
+    console.log("LOADING");
+    await contract.methods
+      .getAvailableResaleDirectSaleTickets()
       .call()
       .then((events) => {
         setEventsData(events);
@@ -949,13 +1120,118 @@ export default function App(props) {
           <p className="text-center">Loading...</p>
         </div>
       ) : (
-        <Home
-          contract={contract}
-          createNewEvent={createNewEvent}
-          openEventSale={openEventSale}
-          getAvailableEvents={getAvailableEvents}
-          eventsData={eventsData}
-        />
+        <>
+          <Home
+            account={account}
+            createNewEvent={createNewEvent}
+            openEventSale={openEventSale}
+            getAvailableEvents={getAvailableEvents}
+            eventsData={eventsData}
+            closeEventSale={closeEventSale}
+            URImintForEventId={URImintForEventId}
+          />
+          <div>
+            <div className="d-flex">
+              <input
+                value={param1}
+                onChange={(e) => setParam1(e.target.value)}
+                type="text"
+                placeholder="Param"
+                className="col-1"
+              />
+              <input
+                value={param2}
+                onChange={(e) => setParam2(e.target.value)}
+                type="text"
+                placeholder="Param"
+                className="col-1"
+              />
+              <input
+                value={param3}
+                onChange={(e) => setParam3(e.target.value)}
+                type="text"
+                placeholder="Param"
+                className="col-1"
+              />
+              <input
+                value={param4}
+                onChange={(e) => setParam4(e.target.value)}
+                type="text"
+                placeholder="Param"
+                className="col-1"
+              />
+              <input
+                value={param5}
+                onChange={(e) => setParam5(e.target.value)}
+                type="text"
+                placeholder="Param"
+                className="col-1"
+              />
+            </div>
+            <div className="d-flex my-2">
+              <Button
+                className="mx-1"
+                onClick={() => BulkURImintForEventId(param1, param2, param3)}
+              >
+                BulkURImintForEventId
+              </Button>
+              <Button
+                className="mx-1"
+                onClick={() =>
+                  AuthorizeSellTicketfromEventOwner(param1, param2, param3)
+                }
+              >
+                AuthorizeSellTicketfromEventOwner
+              </Button>
+            </div>
+            <Button
+              className="mx-1"
+              onClick={() =>
+                authorizeSellTicketfromSecondHandOwner(param1, param2, param3)
+              }
+            >
+              authorizeSellTicketfromSecondHandOwner
+            </Button>
+            <Button
+              className="mx-1"
+              onClick={() => bid(param1, param2, param3)}
+            >
+              bid
+            </Button>
+            <div className="d-flex my-2">
+              <Button
+                className="mx-1"
+                onClick={() => releaseTokentoHighestBidder(param1)}
+              >
+                releaseTokentoHighestBidder
+              </Button>
+              <Button
+                className="mx-1"
+                onClick={() => sellToken(param1, param2, param3, param4)}
+              >
+                sellToken
+              </Button>
+              <Button
+                className="mx-1"
+                onClick={() => getAvailableEventTickets(param1)}
+              >
+                getAvailableEventTickets
+              </Button>
+              <Button
+                className="mx-1"
+                onClick={() => getAvailableResaleAuctions()}
+              >
+                getAvailableEventTickets
+              </Button>
+              <Button
+                className="mx-1"
+                onClick={() => getAvailableResaleDirectSaleTickets()}
+              >
+                getAvailableEventTickets
+              </Button>
+            </div>
+          </div>
+        </>
       )}
       {/* 
         

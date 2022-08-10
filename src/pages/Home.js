@@ -1,11 +1,24 @@
 import React, { useEffect, useState } from "react";
 import { Modal, Button } from "react-bootstrap";
 
-function Home({ createNewEvent, openEventSale, getAvailableEvents, eventsData}) {
+function Home({
+  account,
+  createNewEvent,
+  openEventSale,
+  getAvailableEvents,
+  eventsData,
+  closeEventSale,
+  URImintForEventId,
+  BulkURImintForEventId,
+  AuthorizeSellTicketfromEventOwner,
+  authorizeSellTicketfromSecondHandOwner,
+}) {
   const [eventName, setEventName] = useState("");
   const [totalSupply, setTotalSupply] = useState();
   const [basePrice, setBasePrice] = useState();
-
+  const [targetURI, setTargetURI] = useState();
+  const [numberOfTickets, setNumberOfTickets] = useState();
+  const [paymentAmount, setPaymentAmount] = useState();
   const [event_id, setEventID] = useState();
 
   const [show, setShow] = useState(false);
@@ -23,20 +36,20 @@ function Home({ createNewEvent, openEventSale, getAvailableEvents, eventsData}) 
   return (
     <>
       <div className="App row">
-        <div className="border m-1 mx-2 px-3 col-2">
-          {data.map((item) => {
-            return <p key={`${item}`}>Navigation</p>;
-          })}
+        <div className="border m-1 mx-2 px-3 col-4">
+          <br></br>
+
           <div>
             <Button onClick={() => setShow(true)}>Add New Event</Button>
           </div>
           <br></br>
+
           <div className="d-flex">
             <input
               value={event_id}
               onChange={(e) => setEventID(e.target.value)}
               type="number"
-              placeholder="100"
+              placeholder="EventID"
               className="col-6"
             />
 
@@ -46,14 +59,87 @@ function Home({ createNewEvent, openEventSale, getAvailableEvents, eventsData}) 
           </div>
           <br></br>
 
+          <div className="d-flex">
+            <input
+              value={event_id}
+              onChange={(e) => setEventID(e.target.value)}
+              type="number"
+              placeholder="EventID"
+              className="col-6"
+            />
+
+            <Button onClick={() => closeEventSale(event_id)}>
+              Close Event Sale
+            </Button>
+          </div>
+          <br></br>
+
+          <div className="d-flex">
+            <input
+              value={targetURI}
+              onChange={(e) => setTargetURI(e.target.value)}
+              type="text"
+              placeholder="TargetURI"
+              className="col-4"
+            />
+            <input
+              value={event_id}
+              onChange={(e) => setEventID(e.target.value)}
+              type="number"
+              placeholder="EventID"
+              className="col-4"
+            />
+
+            <Button onClick={() => URImintForEventId(targetURI, event_id)}>
+              URI mint For EventId
+            </Button>
+          </div>
+          <br></br>
+
+          <div className="d-flex">
+            <input
+              value={targetURI}
+              onChange={(e) => setTargetURI(e.target.value)}
+              type="text"
+              placeholder="TargetURI"
+              className="col-2"
+            />
+            <input
+              value={event_id}
+              onChange={(e) => setEventID(e.target.value)}
+              type="number"
+              placeholder="EventID"
+              className="col-2"
+            />
+            <input
+              value={numberOfTickets}
+              onChange={(e) => setEventID(e.target.value)}
+              type="number"
+              placeholder="Number Of Tickets"
+              className="col-2"
+            />
+
+            <Button
+              onClick={() =>
+                BulkURImintForEventId(targetURI, event_id, numberOfTickets)
+              }
+            >
+              Bulk URI mint For EventId
+            </Button>
+          </div>
+          <br></br>
+
           <div>
             <Button onClick={() => getAvailableEvents()}>Get All Events</Button>
           </div>
         </div>
-        <div className="px-5 row pt-5 col-10">
+        <div className="px-5 row pt-5 col-8">
           {eventsData.map((item) => {
             return (
-              <div key={item.eventId + item.eventName} className="col-3 border m-1 mx-2 p-2 d-flex justify-content-center">
+              <div
+                key={item.eventId + item.eventName}
+                className="col-3 border m-1 mx-2 p-2 d-flex justify-content-center"
+              >
                 {/* <img>hy</img> */}
                 <div>
                   <img
