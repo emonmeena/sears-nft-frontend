@@ -1,4 +1,11 @@
 import React, { useEffect, useState } from "react";
+import {
+  BrowserRouter as Router,
+  Routes,
+  Route,
+  Link,
+  useParams,
+} from "react-router-dom";
 import Web3 from "web3";
 import Home from "./pages/Home";
 import "./App.css";
@@ -11,13 +18,11 @@ export default function App(props) {
   const [loading, setLoading] = useState(true);
   const [eventsData, setEventsData] = useState(null);
 
-  const [param1, setParam1] = useState();
-  const [param2, setParam2] = useState();
-  const [param3, setParam3] = useState();
-  const [param4, setParam4] = useState();
-  const [param5, setParam5] = useState();
+  const [tokenId, settokenId] = useState();
+  const [owner, setowner] = useState();
 
   useEffect(() => {
+    console.log("useEffect");
     loadingDeafult();
   }, []);
 
@@ -901,8 +906,12 @@ export default function App(props) {
           type: "function",
         },
       ],
-      // 0xC37d1D95A017EBfb54b590BA0BF22dE26060a99A  
-      "0x98Ef5F009FCC2448b6D4b461b2078B957693358E",
+      // 0xC37d1D95A017EBfb54b590BA0BF22dE26060a99A
+      // 0x7d9916f76FB9D48D37A1710C5e49D24b7e1a3eEd
+      // "0x44E55DbCa6672b6CbE7419bDEFdC2997E145Fb5c",
+      // "0x055e43aFd89e4722bC49d38951E1b523c348beE9",
+      // "0x7CED9f328E27C51f9d01D90C50027eC3a90b9e40",
+      "0x410353A524d1AabD1A8E5aaCf66c18b318842c92",
       { from: account, gas: 150000, gasPrice: "30000000000" }
     );
     setContract(myContract);
@@ -910,7 +919,9 @@ export default function App(props) {
     await myContract.methods
       .getAvailableEvents()
       .call()
-      .then((events) => setEventsData(events))
+      .then((events) => {
+        setEventsData(events);
+      })
       .catch((err) => console.log(err));
   };
 
@@ -925,13 +936,13 @@ export default function App(props) {
         }
         console.log("Hash of the transaction: " + res);
       })
-    .once("receipt", (receipt) => {
-      console.log(receipt);
-    });
+      .once("receipt", (receipt) => {
+        console.log(receipt);
+      });
   };
 
   const openEventSale = async (event_id) => {
-    console.log("LOADING");
+    console.log("LOADING", event_id);
 
     await contract.methods
       .openEventSale(event_id)
@@ -951,6 +962,18 @@ export default function App(props) {
       .then((events) => {
         setEventsData(events);
         console.log(events);
+      })
+      .catch((err) => console.log(err));
+  };
+
+  const ownerOf = async (tokenId) => {
+    console.log("getting owner");
+
+    await contract.methods
+      .ownerOf(tokenId)
+      .call()
+      .then((owner) => {
+        setowner(owner);
       })
       .catch((err) => console.log(err));
   };
@@ -983,7 +1006,7 @@ export default function App(props) {
     event_id,
     number_of_tickets
   ) => {
-    console.log("LOADING");
+    console.log("LOADING Bulk", target_uri, event_id, number_of_tickets);
 
     await contract.methods
       .BulkURImintForEventId(target_uri, event_id, number_of_tickets)
@@ -996,16 +1019,17 @@ export default function App(props) {
   const AuthorizeSellTicketfromEventOwner = async (
     ticket_id,
     payment_amount,
-    event_id
+    event_id,
+    buyer
   ) => {
-    console.log("LOADING");
+    console.log("LOADING", ticket_id, payment_amount, event_id, buyer);
 
     await contract.methods
       .authorizeSellTicketfromEventOwner(
         ticket_id,
         payment_amount,
         event_id,
-        account
+        buyer
       )
       .send({ from: account })
       .once("receipt", (receipt) => {
@@ -1108,155 +1132,66 @@ export default function App(props) {
       .catch((err) => console.log(err));
   };
 
+  const Main = () => {
+    return loading ? (
+      <div
+        id="loader"
+        className="text-center d-flex align-items-center w-100 justify-content-center fs-4"
+        style={{ height: "70vh", fontWeight: "600" }}
+      >
+        <p className="text-center">Loading...</p>
+      </div>
+    ) : (
+      <>
+        <Home
+          account={account}
+          createNewEvent={createNewEvent}
+          openEventSale={openEventSale}
+          getAvailableEvents={getAvailableEvents}
+          eventsData={eventsData}
+          closeEventSale={closeEventSale}
+          URImintForEventId={URImintForEventId}
+          BulkURImintForEventId={BulkURImintForEventId}
+          AuthorizeSellTicketfromEventOwner={AuthorizeSellTicketfromEventOwner}
+          sellToken={sellToken}
+          bid={bid}
+          releaseTokentoHighestBidder={releaseTokentoHighestBidder}
+        />
+        <div>
+          <div>
+            <input
+              value={tokenId}
+              onChange={(e) => settokenId(e.target.value)}
+              type="text"
+              placeholder="tokenId"
+              className="col-1"
+            />
+            <Button onClick={() => ownerOf(tokenId)}>ownerOf</Button>
+          </div>
+          {owner}
+          <div className="d-flex"></div>
+          <div className="d-flex my-2"></div>
+        </div>
+      </>
+    );
+  };
+
   return (
     <>
-      <Navbar account={account} />
-      {loading ? (
-        <div
-          id="loader"
-          className="text-center d-flex align-items-center w-100 justify-content-center fs-4"
-          style={{ height: "70vh", fontWeight: "600" }}
-        >
-          <p className="text-center">Loading...</p>
-        </div>
-      ) : (
-        <>
-          <Home
-            account={account}
-            createNewEvent={createNewEvent}
-            openEventSale={openEventSale}
-            getAvailableEvents={getAvailableEvents}
-            eventsData={eventsData}
-            closeEventSale={closeEventSale}
-            URImintForEventId={URImintForEventId}
-          />
-          <div>
-            <div className="d-flex">
-              <input
-                value={param1}
-                onChange={(e) => setParam1(e.target.value)}
-                type="text"
-                placeholder="Param"
-                className="col-1"
-              />
-              <input
-                value={param2}
-                onChange={(e) => setParam2(e.target.value)}
-                type="text"
-                placeholder="Param"
-                className="col-1"
-              />
-              <input
-                value={param3}
-                onChange={(e) => setParam3(e.target.value)}
-                type="text"
-                placeholder="Param"
-                className="col-1"
-              />
-              <input
-                value={param4}
-                onChange={(e) => setParam4(e.target.value)}
-                type="text"
-                placeholder="Param"
-                className="col-1"
-              />
-              <input
-                value={param5}
-                onChange={(e) => setParam5(e.target.value)}
-                type="text"
-                placeholder="Param"
-                className="col-1"
-              />
-            </div>
-            <div className="d-flex my-2">
-              <Button
-                className="mx-1"
-                onClick={() => BulkURImintForEventId(param1, param2, param3)}
-              >
-                BulkURImintForEventId
-              </Button>
-              <Button
-                className="mx-1"
-                onClick={() =>
-                  AuthorizeSellTicketfromEventOwner(param1, param2, param3)
-                }
-              >
-                AuthorizeSellTicketfromEventOwner
-              </Button>
-            </div>
-            <Button
-              className="mx-1"
-              onClick={() =>
-                authorizeSellTicketfromSecondHandOwner(param1, param2, param3)
-              }
-            >
-              authorizeSellTicketfromSecondHandOwner
-            </Button>
-            <Button
-              className="mx-1"
-              onClick={() => bid(param1, param2, param3)}
-            >
-              bid
-            </Button>
-            <div className="d-flex my-2">
-              <Button
-                className="mx-1"
-                onClick={() => releaseTokentoHighestBidder(param1)}
-              >
-                releaseTokentoHighestBidder
-              </Button>
-              <Button
-                className="mx-1"
-                onClick={() => sellToken(param1, param2, param3, param4)}
-              >
-                sellToken
-              </Button>
-              <Button
-                className="mx-1"
-                onClick={() => getAvailableEventTickets(param1)}
-              >
-                getAvailableEventTickets
-              </Button>
-              <Button
-                className="mx-1"
-                onClick={() => getAvailableResaleAuctions()}
-              >
-                getAvailableEventTickets
-              </Button>
-              <Button
-                className="mx-1"
-                onClick={() => getAvailableResaleDirectSaleTickets()}
-              >
-                getAvailableEventTickets
-              </Button>
-            </div>
-          </div>
-        </>
-      )}
-      {/* 
-        
-        <div className="container-fluid">
-          <div className="row">
-            <main >
-              { this.state.loading
-                ? <div id="loader" className="text-center d-flex align-items-center w-100 justify-content-center fs-4" style={{height:"70vh",fontWeight:"600"}}><p className="text-center">Loading...</p></div>
-                : <Main
-                contract={this.state.myContract}
-                deleteRequest={this.deleteRequest}
-                createProduct={this.createProduct}
-                products={this.state.products}
-                requestProduct={this.requestProduct}
-                requestCount={this.state.requestCount}
-                request={this.state.request}
-                purchaseProduct={this.purchaseProduct}
-              
-
-                  />
-
-              }
-            </main>
-          </div>
-        </div> */}
+      <Router>
+        <Navbar account={account} />
+        <Routes>
+          <Route path="/" element={<Main />}></Route>
+          <Route path="event" element={<EventPage />}>
+            <Route path=":eventid" element={<EventPage />} />
+          </Route>
+        </Routes>
+      </Router>
     </>
   );
 }
+
+const EventPage = () => {
+  let params = useParams();
+  return <h2>Event: {params.eventid}</h2>;
+};
